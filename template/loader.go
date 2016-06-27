@@ -7,9 +7,8 @@ import (
 )
 
 type File struct {
-	Filename string
-	Path     string
-	Content  []byte
+	Name    string
+	Content []byte
 }
 
 // Loader is a template loader interface
@@ -35,10 +34,10 @@ func (loader *fsLoader) Load() (templates []File, err error) {
 			return err
 		}
 
+		rel, _ := filepath.Rel(loader.basePath, path)
 		tpl := File{
-			Filename: info.Name(),
-			Path:     path,
-			Content:  b,
+			Name:    rel,
+			Content: b,
 		}
 		templates = append(templates, tpl)
 		return nil

@@ -32,7 +32,7 @@ func Fasttemplate(loader Loader, startTag, endTag string) echo.Renderer {
 
 	templates := make(map[string]*fasttemplate.Template)
 	for _, file := range files {
-		templates[file.Filename] = fasttemplate.New(string(file.Content), startTag, endTag)
+		templates[file.Name] = fasttemplate.New(string(file.Content), startTag, endTag)
 	}
 	return &ftemplate{templates: templates}
 }

@@ -25,12 +25,12 @@ func parseStandardTemplateFiles(files []File) (*tpl.Template, error) {
 	for _, file := range files {
 		var tmpl *tpl.Template
 		if templates == nil {
-			templates = tpl.New(file.Filename)
+			templates = tpl.New(file.Name)
 		}
-		if file.Filename == templates.Name() {
+		if file.Name == templates.Name() {
 			tmpl = templates
 		} else {
-			tmpl = templates.New(file.Filename)
+			tmpl = templates.New(file.Name)
 		}
 		_, err := tmpl.Parse(string(file.Content))
 		if err != nil {
