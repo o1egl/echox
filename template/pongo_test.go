@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestFastTemplate(t *testing.T) {
-	renderer := FastTemplate(FSLoader("./testdata/fasttemplate"), "{{", "}}")
+func TestPongo(t *testing.T) {
+	renderer := Pongo(FSLoader("./testdata/pongo"))
 	buf := new(bytes.Buffer)
 
 	err := renderer.Render(buf, "hello.html", map[string]interface{}{"name": "Joe"}, nil)

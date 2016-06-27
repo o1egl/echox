@@ -7,11 +7,11 @@ import (
 	"io"
 )
 
-type standatd struct {
+type htmlRenderer struct {
 	templates *tpl.Template
 }
 
-func (t *standatd) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+func (t *htmlRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
@@ -40,7 +40,8 @@ func parseStandardTemplateFiles(files []File) (*tpl.Template, error) {
 	return templates, nil
 }
 
-func Standard(loader Loader) echo.Renderer {
+// HTML returns html/template renderer
+func HTML(loader Loader) echo.Renderer {
 	files, err := loader.Load()
 	if err != nil {
 		panic(err.Error())
@@ -50,5 +51,5 @@ func Standard(loader Loader) echo.Renderer {
 	if err != nil {
 		panic(err.Error())
 	}
-	return &standatd{templates: templates}
+	return &htmlRenderer{templates: templates}
 }

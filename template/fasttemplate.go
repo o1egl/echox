@@ -3,15 +3,15 @@ package template
 import (
 	"errors"
 	"github.com/labstack/echo"
-	"github.com/valyala/fasttemplate"
+	fast "github.com/valyala/fasttemplate"
 	"io"
 )
 
-type ftemplate struct {
-	templates map[string]*fasttemplate.Template
+type fRenderer struct {
+	templates map[string]*fast.Template
 }
 
-func (t *ftemplate) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+func (t *fRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	tpl, ok := t.templates[name]
 	if !ok {
 		return errors.New("No template with name " + name)
@@ -24,15 +24,16 @@ func (t *ftemplate) Render(w io.Writer, name string, data interface{}, c echo.Co
 	return err
 }
 
-func Fasttemplate(loader Loader, startTag, endTag string) echo.Renderer {
+// FastTemplate returns fasttemplate renderer
+func FastTemplate(loader Loader, startTag, endTag string) echo.Renderer {
 	files, err := loader.Load()
 	if err != nil {
 		panic(err.Error())
 	}
 
-	templates := make(map[string]*fasttemplate.Template)
+	templates := make(map[string]*fast.Template)
 	for _, file := range files {
-		templates[file.Name] = fasttemplate.New(string(file.Content), startTag, endTag)
+		templates[file.Name] = fast.New(string(file.Content), startTag, endTag)
 	}
-	return &ftemplate{templates: templates}
+	return &fRenderer{templates: templates}
 }

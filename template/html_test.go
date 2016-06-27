@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestStandard(t *testing.T) {
-	renderer := Standard(FSLoader("./testdata/standard"))
+func TestHTML(t *testing.T) {
+	renderer := HTML(FSLoader("./testdata/html"))
 	buf := new(bytes.Buffer)
 
 	err := renderer.Render(buf, "hello", map[string]string{"Name": "Joe"}, nil)

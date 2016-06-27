@@ -6,8 +6,19 @@ import (
 )
 
 func TestFSLoader(t *testing.T) {
-	loader := FSLoader("./testdata/fasttemplate")
+	files := []File{
+		{
+			Name:    "index.html",
+			Content: []byte("index"),
+		},
+		{
+			Name:    "admin/dashboard.html",
+			Content: []byte("dashboard"),
+		},
+	}
+	loader := FSLoader("./testdata/loader")
 	if data, err := loader.Load(); assert.NoError(t, err) {
-		assert.Equal(t, "Hello, {{name}}!", string(data[0].Content))
+		assert.Contains(t, data, files[0])
+		assert.Contains(t, data, files[1])
 	}
 }
