@@ -9,11 +9,11 @@ before_install:
     - go get github.com/mattn/goveralls
     - go get golang.org/x/tools/cmd/cover
 install:
-    - go get -t -v ./...
     - go get -u github.com/jteeuwen/go-bindata/...
     - go-bindata -o template/assets/templates.go -pkg=assets_test -prefix=template/testdata/loader template/testdata/loader/...
+    - go get -t -v ./...
 script:
-    - diff -u <(echo -n) <(gofmt -d -s .)
+    - diff -u <(echo -n) <(gofmt -d -s $(find . -type f -name '*.go' -not -path "./template/assets/*"))
     - go test -coverprofile=log.coverprofile ./log
     - go test -coverprofile=template.coverprofile ./template
     - gover
