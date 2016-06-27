@@ -32,11 +32,9 @@ func main() {
 }
 ```
 
-## Template renderers
+## Template loaders
 
-### Template loaders
-
-If you have following hierarchy:
+If you have the following hierarchy:
 ```
 public/
      css/
@@ -47,24 +45,26 @@ public/
 
 1. File system loader
 
-```go
- loader := template.FSLoader("public/templates")
-```
+    ```go
+     loader := template.FSLoader("public/templates")
+    ```
 
 2. go-bindata in memory loader
 
-First you need to generate bin data file
+    First you need to generate bin data file
+    
+    ```
+    $ go get -u github.com/jteeuwen/go-bindata/...
+    $ go-bindata -o assets/assets.go -pkg=assets -prefix=public public/...
+    ```
 
-```
-$ go get -u github.com/jteeuwen/go-bindata/...
-$ go-bindata -o assets/assets.go -pkg=assets -prefix=public public/...
-```
+    ```go
+     loader := template.GOBinDataLoader("templates", assets.AssetDir, assets.Asset)
+    ```
 
-```go
- loader := template.GOBinDataLoader("templates", assets.AssetDir, assets.Asset)
-```
+## Template renderers
 
-- [html](https://golang.org/pkg/html/template/)
+### [html](https://golang.org/pkg/html/template/) renderer
 ```go
 package main
 
@@ -84,7 +84,7 @@ func main() {
     e.Run(standard.New(":1323"))
 }
 ```
-- [Fasttemplate](https://github.com/valyala/fasttemplate)
+### [Fasttemplate](https://github.com/valyala/fasttemplate) renderer
 ```go
 package main
 
@@ -105,7 +105,7 @@ func main() {
 }
 ```
 
-- [Pongo2](https://github.com/flosch/pongo2)
+### [Pongo2](https://github.com/flosch/pongo2) renderer
 ```go
 package main
 
