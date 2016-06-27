@@ -8,7 +8,7 @@
 
 EchoX is extensions library for [Echo](https://github.com/labstack/echo) web framework.
 
-### Loggers
+## Loggers
 
 - [Logrus](https://github.com/Sirupsen/logrus)
 
@@ -32,7 +32,37 @@ func main() {
 }
 ```
 
-### Template engines
+## Template renderers
+
+### Template loaders
+
+If you have following hierarchy:
+```
+public/
+     css/
+     js/
+     images/
+     templates/
+```
+
+1. File system loader
+
+```go
+ loader := template.FSLoader("public/templates")
+```
+
+2. go-bindata in memory loader
+
+First you need to generate bin data file
+
+```
+$ go get -u github.com/jteeuwen/go-bindata/...
+$ go-bindata -o assets/assets.go -pkg=assets -prefix=public public/...
+```
+
+```go
+ loader := template.GOBinDataLoader("templates", assets.AssetDir, assets.Asset)
+```
 
 - [html](https://golang.org/pkg/html/template/)
 ```go
