@@ -12,5 +12,5 @@ func TestPongo(t *testing.T) {
 
 	err := renderer.Render(buf, "hello.html", map[string]interface{}{"name": "Joe"}, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, "Hello, Joe!", buf.String())
+	assert.Equal(t, "Base template\nHello, Joe!", buf.String())
 }

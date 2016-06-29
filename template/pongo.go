@@ -38,8 +38,7 @@ func (p *pongoLoaderProxy) Abs(base, name string) string {
 	if name == "" {
 		return base
 	}
-
-	return filepath.Dir(base) + string(filepath.Separator) + name
+	return filepath.Clean(filepath.Dir(base) + string(filepath.Separator) + name)
 }
 
 func (p *pongoLoaderProxy) Get(path string) (io.Reader, error) {
