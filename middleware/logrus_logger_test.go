@@ -13,7 +13,7 @@ import (
 
 func TestLogrusLogger(t *testing.T) {
 	logger := logrus.New()
-	logger.Formatter = &logrus.TextFormatter{}
+	logger.Formatter = &logrus.TextFormatter{ForceColors: false, DisableColors: true}
 	logger.Level = logrus.DebugLevel
 	buf := new(bytes.Buffer)
 	logger.Out = buf
@@ -27,7 +27,7 @@ func TestLogrusLogger(t *testing.T) {
 	rec := test.NewResponseRecorder()
 	c := e.NewContext(req, rec)
 
-	h := LogrusLogger(logger)(func(c echo.Context) error {
+	h := LogrusLogger(&LogrusConfig{Logger: logger})(func(c echo.Context) error {
 		return c.String(http.StatusOK, "test")
 	})
 
@@ -39,7 +39,7 @@ func TestLogrusLogger(t *testing.T) {
 	// Status 3xx
 	rec = test.NewResponseRecorder()
 	c = e.NewContext(req, rec)
-	h = LogrusLogger(logger)(func(c echo.Context) error {
+	h = LogrusLogger(&LogrusConfig{Logger: logger})(func(c echo.Context) error {
 		return c.String(http.StatusTemporaryRedirect, "test")
 	})
 	h(c)
@@ -49,7 +49,7 @@ func TestLogrusLogger(t *testing.T) {
 	// Status 4xx
 	rec = test.NewResponseRecorder()
 	c = e.NewContext(req, rec)
-	h = LogrusLogger(logger)(func(c echo.Context) error {
+	h = LogrusLogger(&LogrusConfig{Logger: logger})(func(c echo.Context) error {
 		return c.String(http.StatusNotFound, "test")
 	})
 	h(c)
@@ -59,10 +59,22 @@ func TestLogrusLogger(t *testing.T) {
 	// Status 5xx with empty path
 	rec = test.NewResponseRecorder()
 	c = e.NewContext(req, rec)
-	h = LogrusLogger(logger)(func(c echo.Context) error {
+	h = LogrusLogger(&LogrusConfig{Logger: logger})(func(c echo.Context) error {
 		return errors.New("error")
 	})
 	h(c)
 	assert.Contains(t, buf.String(), "method=GET path=\"/o1egl/echox\" referer=\"https://github.com/\" remote_ip=127.0.0.1 rx_bytes=0 status=500 tx_bytes=21 uri=\"https://github.com/o1egl/echox\" user_agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0\"")
 	buf.Reset()
+
+	// Exclude assets
+	req = test.NewRequest(echo.GET, "https://site.com/assets/main.js", nil)
+	rec = test.NewResponseRecorder()
+	c = e.NewContext(req, rec)
+	h = LogrusLogger(&LogrusConfig{Logger: logger, Exclude: "/assets.*"})(func(c echo.Context) error {
+		return c.String(http.StatusOK, "test")
+	})
+	h(c)
+	assert.Equal(t, buf.String(), "")
+	buf.Reset()
+
 }
