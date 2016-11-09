@@ -2,13 +2,12 @@ package log
 
 import (
 	"bytes"
+	"testing"
+
 	"github.com/Sirupsen/logrus"
 	elog "github.com/labstack/echo/log"
 	glog "github.com/labstack/gommon/log"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"os/exec"
-	"testing"
 )
 
 var u = make(glog.JSON)
@@ -24,9 +23,9 @@ func TestLogrusInit(t *testing.T) {
 	assert.Implements(t, (*elog.Logger)(nil), log)
 
 	ls := logrus.New()
-	ls.Level = logrus.FatalLevel
+	ls.Level = logrus.ErrorLevel
 	log = LogrusFromLogger(ls)
-	assert.Equal(t, logrus.FatalLevel, log.logger.Level)
+	assert.Equal(t, logrus.ErrorLevel, log.logger.Level)
 }
 
 func TestLogrus(t *testing.T) {
@@ -38,7 +37,6 @@ func TestLogrus(t *testing.T) {
 		glog.INFO:  logrus.InfoLevel,
 		glog.WARN:  logrus.WarnLevel,
 		glog.ERROR: logrus.ErrorLevel,
-		glog.FATAL: logrus.FatalLevel,
 	}
 
 	for gl, ll := range lvls {
@@ -47,23 +45,6 @@ func TestLogrus(t *testing.T) {
 	}
 
 	log.SetLevel(glog.DEBUG)
-
-	switch os.Getenv("TEST_LOGGER_FATAL") {
-	case "fatal":
-		log.Fatal("Fatal")
-		return
-	case "fatalf":
-		log.Fatalf("Fatal%s", "f")
-		return
-	case "fatalj":
-		log.Fatalj(u)
-		return
-	case "":
-
-	default:
-		t.Fatalf("Incorrect TEST_LOGGER_FATAL param %s", os.Getenv("TEST_LOGGER_FATAL"))
-
-	}
 
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
@@ -109,11 +90,6 @@ func TestLogrus(t *testing.T) {
 	testLogMsg(t, "Errorf", buf)
 	log.Errorj(u)
 	testLogMsg(t, ustr, buf)
-
-	fatalLogrusTest(t, "fatal", "Fatal")
-	fatalLogrusTest(t, "fatalf", "Fatalf")
-	fatalLogrusTest(t, "fatalj", ustr)
-
 }
 
 func TestLogrusOff(t *testing.T) {
@@ -147,24 +123,6 @@ func TestLogrusOff(t *testing.T) {
 	log.Errorj(u)
 
 	assert.Equal(t, buf.String(), "")
-
-	fatalLogrusTest(t, "fatal", "")
-	fatalLogrusTest(t, "fatalf", "")
-	fatalLogrusTest(t, "fatalj", "")
-}
-
-func fatalLogrusTest(t *testing.T, env string, contains string) {
-	buf := new(bytes.Buffer)
-	cmd := exec.Command(os.Args[0], "-test.run=TestLogrus")
-	cmd.Env = append(os.Environ(), "TEST_LOGGER_FATAL="+env)
-	cmd.Stdout = buf
-	cmd.Stderr = buf
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
-		assert.Contains(t, buf.String(), contains)
-		return
-	}
-	t.Fatalf("process ran with err %v, want exit status 1", err)
 }
 
 func testLogMsg(t *testing.T, msg string, buf *bytes.Buffer) {
