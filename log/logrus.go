@@ -2,10 +2,11 @@ package log
 
 import (
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
-	glog "github.com/labstack/gommon/log"
 	"io"
 	"sync"
+
+	"github.com/Sirupsen/logrus"
+	glog "github.com/labstack/gommon/log"
 )
 
 type logrusLog struct {
@@ -32,8 +33,6 @@ func (l *logrusLog) SetLevel(lvl glog.Lvl) {
 		logLevel = logrus.WarnLevel
 	case glog.ERROR:
 		logLevel = logrus.ErrorLevel
-	case glog.FATAL:
-		logLevel = logrus.FatalLevel
 	case glog.OFF:
 		l.off = true
 	}
