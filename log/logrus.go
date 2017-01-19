@@ -2,22 +2,44 @@ package log
 
 import (
 	"encoding/json"
-	"github.com/Sirupsen/logrus"
-	glog "github.com/labstack/gommon/log"
 	"io"
 	"sync"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/labstack/echo"
+	glog "github.com/labstack/gommon/log"
 )
 
 type logrusLog struct {
 	sync.Mutex
 	logger *logrus.Logger
+	prefix string
 	off    bool
+}
+
+func (l *logrusLog) Output() io.Writer {
+	return l.logger.Out
 }
 
 func (l *logrusLog) SetOutput(out io.Writer) {
 	l.Lock()
 	defer l.Unlock()
 	l.logger.Out = out
+}
+
+func (l *logrusLog) Level() glog.Lvl {
+	switch l.logger.Level {
+	case logrus.InfoLevel:
+		return glog.INFO
+	case logrus.WarnLevel:
+		return glog.WARN
+	case logrus.ErrorLevel:
+		return glog.ERROR
+	}
+	if l.off {
+		return glog.OFF
+	}
+	return glog.DEBUG
 }
 
 func (l *logrusLog) SetLevel(lvl glog.Lvl) {
@@ -32,12 +54,18 @@ func (l *logrusLog) SetLevel(lvl glog.Lvl) {
 		logLevel = logrus.WarnLevel
 	case glog.ERROR:
 		logLevel = logrus.ErrorLevel
-	case glog.FATAL:
-		logLevel = logrus.FatalLevel
 	case glog.OFF:
 		l.off = true
 	}
 	l.logger.Level = logLevel
+}
+func (l *logrusLog) Prefix() string {
+	return l.prefix
+}
+
+func (l *logrusLog) SetPrefix(p string) {
+	// TODO implement logging with prefix feature
+	l.prefix = p
 }
 
 func (l *logrusLog) Print(i ...interface{}) {
@@ -154,8 +182,27 @@ func (l *logrusLog) Fatalj(j glog.JSON) {
 	}
 }
 
+func (l *logrusLog) Panic(i ...interface{}) {
+	if !l.off {
+		l.logger.Panic(i...)
+	}
+}
+
+func (l *logrusLog) Panicf(format string, i ...interface{}) {
+	if !l.off {
+		l.logger.Panicf(format, i...)
+	}
+}
+
+func (l *logrusLog) Panicj(j glog.JSON) {
+	if !l.off {
+		b, _ := json.Marshal(j)
+		l.logger.Panic(string(b))
+	}
+}
+
 // Logrus returns logger with default logrus instance
-func Logrus() *logrusLog {
+func Logrus() echo.Logger {
 	return &logrusLog{
 		logger: logrus.StandardLogger(),
 		off:    false,
@@ -163,9 +210,11 @@ func Logrus() *logrusLog {
 }
 
 // LogrusFromLogger returns logger with custom logrus instance
-func LogrusFromLogger(logger *logrus.Logger) *logrusLog {
+func LogrusFromLogger(logger *logrus.Logger) echo.Logger {
 	return &logrusLog{
 		logger: logger,
 		off:    false,
 	}
 }
+
+var _ echo.Logger = &logrusLog{}
