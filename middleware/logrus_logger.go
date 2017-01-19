@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
 	"net"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/labstack/echo"
 )
 
 type LogrusConfig struct {
@@ -32,7 +33,7 @@ func LogrusLogger(cfg *LogrusConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			req := c.Request()
-			if re == nil || !re.MatchString(req.URI()) {
+			if re == nil || !re.MatchString(req.URL.String()) {
 				res := c.Response()
 
 				start := time.Now()
@@ -41,32 +42,33 @@ func LogrusLogger(cfg *LogrusConfig) echo.MiddlewareFunc {
 				}
 				stop := time.Now()
 
-				ra := req.RemoteAddress()
-				if ip := req.Header().Get(echo.HeaderXRealIP); ip != "" {
+				ra := req.RemoteAddr
+				if ip := req.Header.Get(echo.HeaderXRealIP); ip != "" {
 					ra = ip
-				} else if ip = req.Header().Get(echo.HeaderXForwardedFor); ip != "" {
+				} else if ip = req.Header.Get(echo.HeaderXForwardedFor); ip != "" {
 					ra = ip
 				} else {
 					ra, _, _ = net.SplitHostPort(ra)
 				}
 
-				path := req.URL().Path()
+				path := req.URL.String()
 				if path == "" {
 					path = "/"
 				}
-				status := res.Status()
+				status := res.Status
+
 				latency := stop.Sub(start).Nanoseconds() / 1000
 				latency_human := stop.Sub(start).String()
-				rx_bytes := req.Header().Get(echo.HeaderContentLength)
+				rx_bytes := req.Header.Get(echo.HeaderContentLength)
 				if rx_bytes == "" {
 					rx_bytes = "0"
 				}
-				tx_bytes := strconv.FormatInt(res.Size(), 10)
+				tx_bytes := strconv.FormatInt(res.Size, 10)
 
 				entry := cfg.Logger.WithFields(logrus.Fields{
-					"host":          req.Host(),
-					"uri":           req.URI(),
-					"method":        req.Method(),
+					"host":          req.Host,
+					"uri":           req.URL.String(),
+					"method":        req.Method,
 					"path":          path,
 					"remote_ip":     ra,
 					"referer":       req.Referer(),
